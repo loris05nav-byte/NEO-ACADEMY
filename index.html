@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEO-ACADEMY | Hub Unifié</title>
+    <style>
+        /* =========================================
+           DESIGN SYSTEM TITANIUM 4.0
+           ========================================= */
+        :root {
+            --bg-void: #020205;
+            --bg-panel: #0b0b14;
+            --bg-card: #141422;
+            --primary: #00f0ff;
+            --secondary: #7000ff;
+            --accent: #ff003c;
+            --success: #00ff9d;
+            --text-light: #e0e6ed;
+            --text-dim: #6b7280;
+            --font-head: 'Segoe UI', Roboto, sans-serif;
+            --font-mono: 'Consolas', monospace;
+        }
+
+        /* Thèmes Dynamiques */
+        body.theme-FR { --primary: #00f0ff; --secondary: #7000ff; }
+        body.theme-MATH { --primary: #ff9d00; --secondary: #00ff9d; }
+        body.theme-PHYS { --primary: #fbff00; --secondary: #ff00ea; }
+        body.theme-SVT { --primary: #2bff00; --secondary: #0095ff; }
+
+        * { box-sizing: border-box; outline: none; }
+        body {
+            margin: 0; background: var(--bg-void); color: var(--text-light);
+            font-family: var(--font-head); height: 100vh; overflow: hidden;
+        }
+
+        /* --- AUTH SCREEN --- */
+        #auth-container {
+            position: fixed; inset: 0; z-index: 5000; background: var(--bg-void);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            background-image: radial-gradient(circle at center, #101020 0%, #000 70%);
+        }
+        .auth-card {
+            width: 400px; background: var(--bg-panel); border: 1px solid #333;
+            border-radius: 15px; padding: 40px; text-align: center;
+            box-shadow: 0 0 50px rgba(0, 240, 255, 0.1);
+        }
+        .auth-title { font-size: 2rem; font-weight: 900; color: var(--primary); margin-bottom: 30px; letter-spacing: 2px; }
+        .auth-input {
+            width: 100%; padding: 15px; margin-bottom: 15px; background: #000;
+            border: 1px solid #333; color: white; border-radius: 8px; font-size: 1rem;
+        }
+        .auth-input:focus { border-color: var(--primary); }
+        .auth-btn {
+            width: 100%; padding: 15px; background: var(--primary); color: #000;
+            border: none; border-radius: 8px; font-weight: 900; cursor: pointer; text-transform: uppercase;
+            margin-top: 10px; transition: 0.3s;
+        }
+        .auth-btn:hover { box-shadow: 0 0 20px var(--primary); }
+        .auth-switch { margin-top: 20px; font-size: 0.8rem; color: #666; cursor: pointer; text-decoration: underline; }
+        .auth-error { color: var(--accent); font-size: 0.9rem; margin-bottom: 15px; display: none; padding: 10px; border: 1px solid var(--accent); border-radius: 5px; background: rgba(255,0,60,0.1); }
+
+        /* --- APP CONTAINER --- */
+        #app-container { display: none; width: 100%; height: 100%; display: flex; }
+        
+        /* Sidebar */
+        nav { width: 350px; background: var(--bg-panel); border-right: 1px solid #222; display: flex; flex-direction: column; z-index: 100; box-shadow: 10px 0 50px rgba(0,0,0,0.5); }
+        .brand-box { padding: 30px; text-align: center; border-bottom: 1px solid #222; }
+        .app-name { font-size: 1.8rem; font-weight: 900; color: var(--primary); letter-spacing: -1px; }
+        .user-email { font-size: 0.7rem; color: var(--text-dim); margin-top: 5px; }
+        
+        .subject-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1px; background: #222; border-bottom: 1px solid #222; }
+        .subj-btn { padding: 15px; background: #0b0b14; border: none; color: #666; font-weight: 900; cursor: pointer; transition: 0.3s; font-size: 0.7rem; }
+        .subj-btn.active { background: #1a1a2e; color: var(--primary); box-shadow: inset 0 -3px 0 var(--primary); }
+        
+        .mode-switch { display: flex; padding: 15px; gap: 10px; border-bottom: 1px solid #222; }
+        .mode-btn { flex: 1; padding: 10px; background: #000; border: 1px solid #333; color: #666; border-radius: 4px; cursor: pointer; font-weight: 700; font-size: 0.75rem; }
+        .mode-btn.active { border-color: var(--primary); color: var(--primary); background: rgba(255,255,255,0.05); }
+
+        .nav-content { flex: 1; overflow-y: auto; padding: 20px; }
+        .class-sep { font-size: 0.7rem; color: var(--secondary); font-weight: 900; margin: 25px 0 10px; letter-spacing: 2px; }
+        .mod-item { width: 100%; padding: 12px; margin-bottom: 5px; background: transparent; border: 1px solid transparent; color: #aaa; text-align: left; cursor: pointer; border-radius: 6px; font-size: 0.85rem; }
+        .mod-item:hover { background: rgba(255,255,255,0.03); }
+        .mod-item.active { background: #161625; border-left: 3px solid var(--primary); color: #fff; }
+
+        /* Main View */
+        main { flex: 1; display: flex; flex-direction: column; position: relative; background: radial-gradient(circle at top right, rgba(255,255,255,0.02), transparent); }
+        header { height: 70px; border-bottom: 1px solid #222; display: flex; justify-content: space-between; align-items: center; padding: 0 40px; background: rgba(0,0,0,0.3); backdrop-filter: blur(10px); }
+        
+        .hud-item { font-family: var(--font-mono); font-weight: bold; font-size: 0.9rem; }
+        #viewport { flex: 1; overflow-y: auto; padding: 40px; }
+        .container { max-width: 900px; margin: 0 auto; padding-bottom: 100px; animation: slideUp 0.4s ease; }
+
+        /* Content */
+        .lesson-doc { background: var(--bg-card); border: 1px solid #333; border-radius: 12px; padding: 60px; box-shadow: 0 20px 50px rgba(0,0,0,0.5); }
+        .lesson-doc h1 { font-size: 2.5rem; color: white; margin-bottom: 10px; }
+        .content-text { font-size: 1.15rem; line-height: 1.8; color: #b0b0c0; text-align: justify; margin-bottom: 20px; }
+        
+        .ex-card { background: #000; border: 2px solid #333; border-radius: 20px; padding: 60px; text-align: center; }
+        .ex-q { font-size: 1.8rem; margin-bottom: 40px; font-weight: 600; color: white; }
+        .ex-input { width: 100%; max-width: 500px; background: #111; border: 2px solid #333; color: var(--primary); padding: 20px; font-size: 1.5rem; text-align: center; border-radius: 12px; margin-bottom: 30px; }
+        .qcm-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; max-width: 600px; margin: 0 auto; }
+        .qcm-btn { padding: 20px; background: #111; border: 1px solid #333; color: #ccc; border-radius: 8px; cursor: pointer; font-size: 1rem; transition: 0.2s; }
+        .qcm-btn:hover { border-color: var(--primary); color: white; }
+
+        #logout-btn { background: var(--accent); border:none; color:white; padding:5px 10px; border-radius:4px; cursor: pointer; font-size: 0.6rem; margin-top: 10px;}
+
+        /* Utilities */
+        #toast { position: fixed; bottom: 30px; right: 30px; background: var(--secondary); color: white; padding: 15px 30px; border-radius: 8px; font-weight: 900; transform: translateY(200px); transition: 0.4s; z-index: 6000; }
+        #toast.visible { transform: translateY(0); }
+        #game-over { position: fixed; inset: 0; background: #000; z-index: 4000; display: none; align-items: center; justify-content: center; flex-direction: column; }
+        .glitch-text { font-size: 4rem; font-weight: 900; color: var(--accent); text-transform: uppercase; animation: glitch 1s infinite; }
+        
+        .box-info { background: rgba(0,240,255,0.05); border-left: 4px solid var(--primary); padding: 20px; margin: 20px 0; }
+        .box-warn { background: rgba(255,0,60,0.05); border: 1px dashed var(--accent); padding: 20px; margin: 20px 0; }
+        .hidden { display: none !important; }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="theme-FR">
+
+    <div id="auth-container">
+        <div class="auth-card">
+            <div class="auth-title">NEO-ACADEMY</div>
+            <div id="auth-msg" class="auth-error"></div>
+            
+            <form id="auth-form">
+                <input type="email" id="email" class="auth-input" placeholder="Email" required>
+                <input type="password" id="password" class="auth-input" placeholder="Mot de passe (6 car. min)" required>
+                <button type="submit" id="submit-btn" class="auth-btn">CONNEXION</button>
+            </form>
+
+            <div class="auth-switch" id="auth-switch">Pas de compte ? Créer un compte</div>
+        </div>
+    </div>
+
+    <div id="app-container" class="hidden">
+        
+        <div id="toast">SYSTEM NOTIFICATION</div>
+        <div id="game-over">
+            <h1 class="glitch-text">RUPTURE COGNITIVE</h1>
+            <p style="color:#666; margin-top:20px;">Système épuisé.</p>
+            <button class="auth-btn" style="width:200px; margin-top:20px;" id="revive-btn">RÉINITIALISER</button>
+        </div>
+
+        <nav>
+            <div class="brand-box">
+                <div class="app-name">NEO-ACADEMY</div>
+                <div class="user-email" id="user-display">Chargement...</div>
+                <button id="logout-btn">DÉCONNEXION</button>
+            </div>
+
+            <div class="subject-grid">
+                <button class="subj-btn active" data-subj="FR">FRANÇAIS</button>
+                <button class="subj-btn" data-subj="MATH">MATHS</button>
+                <button class="subj-btn" data-subj="PHYS">PHYSIQUE</button>
+                <button class="subj-btn" data-subj="SVT">SVT</button>
+            </div>
+
+            <div class="mode-switch">
+                <button class="mode-btn active" data-mode="learn">LEÇONS</button>
+                <button class="mode-btn" data-mode="train">EXERCICES</button>
+            </div>
+
+            <div id="nav-list" class="nav-content"></div>
+        </nav>
+
+        <main>
+            <header>
+                <div class="hud-item" id="path-info">INITIALISATION...</div>
+                <div style="display:flex; gap:20px;">
+                    <div class="hud-item" style="color:var(--success)">XP: <span id="xp-val">0</span></div>
+                    <div class="hud-item" id="lives-val">❤️❤️❤️</div>
+                </div>
+            </header>
+            <div id="viewport">
+                <div id="content-area" class="container"></div>
+            </div>
+        </main>
+    </div>
+
+    <script type="module">
+        // Import Firebase SDKs (Version 10 Modular)
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+        import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
+
+        // CONFIGURATION FIREBASE DU CLIENT
+        const firebaseConfig = {
+            apiKey: "AIzaSyCazvx8e8KYjuII8DK8iVSPo3MLDhVb5Mw",
+            authDomain: "neo-academy-lolo.firebaseapp.com",
+            projectId: "neo-academy-lolo",
+            storageBucket: "neo-academy-lolo.firebasestorage.app",
+            messagingSenderId: "577132494103",
+            appId: "1:577132494103:web:48016ed2e44bbb6d7e0b52",
+            measurementId: "G-C74L8TVKS6"
+        };
+
+        // Initialize Firebase
+        const appFirebase = initializeApp(firebaseConfig);
+        const analytics = getAnalytics(appFirebase);
+        const auth = getAuth(appFirebase);
+
+        // --- GESTION DE L'AUTHENTIFICATION ---
+        let isLoginMode = true;
+        const authContainer = document.getElementById('auth-container');
+        const appContainer = document.getElementById('app-container');
+        const errorMsg = document.getElementById('auth-msg');
+        
+        // Toggle Login/Register
+        document.getElementById('auth-switch').addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('submit-btn').innerText = isLoginMode ? "CONNEXION" : "INSCRIPTION";
+            document.getElementById('auth-switch').innerText = isLoginMode ? "Pas de compte ? Créer un compte" : "Déjà un compte ? Se connecter";
+            errorMsg.style.display = 'none';
+        });
+
+        // Submit Form
+        document.getElementById('auth-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email = document.getElementById('email').value;
+            const password = document.getElementById('password').value;
+            errorMsg.style.display = 'none';
+
+            try {
+                if (isLoginMode) {
+                    await signInWithEmailAndPassword(auth, email, password);
+                } else {
+                    await createUserWithEmailAndPassword(auth, email, password);
+                }
+                // La redirection est gérée par onAuthStateChanged
+            } catch (error) {
+                console.error(error);
+                let msg = "Erreur de connexion.";
+                if(error.code === 'auth/invalid-email') msg = "Email invalide.";
+                if(error.code === 'auth/user-not-found') msg = "Utilisateur introuvable.";
+                if(error.code === 'auth/wrong-password') msg = "Mot de passe incorrect.";
+                if(error.code === 'auth/email-already-in-use') msg = "Cet email est déjà utilisé.";
+                if(error.code === 'auth/weak-password') msg = "Mot de passe trop court (6 car. min).";
+                errorMsg.innerText = msg;
+                errorMsg.style.display = 'block';
+            }
+        });
+
+        // Observer l'état de connexion
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is signed in
+                authContainer.style.display = 'none';
+                appContainer.classList.remove('hidden');
+                document.getElementById('user-display').innerText = user.email;
+                game.init(); // Lancer le jeu
+            } else {
+                // User is signed out
+                authContainer.style.display = 'flex';
+                appContainer.classList.add('hidden');
+            }
+        });
+
+        // Déconnexion
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth);
+        });
+
+
+        /* =================================================================
+           BASE DE DONNÉES MASSIVE
+           ================================================================= */
+        const DB = {
+            FR: {
+                '6e': [
+                    { id: 'f61', title: 'Nature et Fonction', cat: 'GRAM', lesson: '<div class="lesson-doc"><h1>Nature vs Fonction</h1><p class="content-text">La nature est l\'identité du mot (Nom, Verbe). La fonction est son rôle (Sujet, COD).</p><div class="box-info">Le mot "Pomme" est toujours un NOM (Nature), mais peut être SUJET ou COD (Fonction).</div></div>', ex: [{q:"Nature de 'vite' ?", a:"adverbe"}, {q:"Fonction de 'moi' dans 'C'est moi'", a:"attribut"}] },
+                    { id: 'f62', title: 'Le Présent', cat: 'CONJ', lesson: '<div class="lesson-doc"><h1>Le Présent de l\'Indicatif</h1><p class="content-text">1er groupe : -e, -es, -e, -ons, -ez, -ent.</p></div>', ex: [{q:"Nous (manger)", a:"mangeons"}] }
+                ],
+                '5e': [ { id: 'f51', title: 'Expansion du Nom', cat: 'GRAM', lesson: '<div class="lesson-doc"><h1>Expansions</h1><p class="content-text">Épithète, CDN, Relative.</p></div>', ex: [{q:"Dans 'Mur de pierre', 'de pierre' est...", a:"cdn"}] } ],
+                '4e': [ { id: 'f41', title: 'Figures de Style', cat: 'LIT', lesson: '<div class="lesson-doc"><h1>Figures</h1><p class="content-text">Comparaison, Métaphore, Personnification.</p></div>', ex: [{q:"'Un soleil noir' est une...", a:"oxymore"}] } ],
+                '3e': [ { id: 'f31', title: 'Le Subjonctif', cat: 'CONJ', lesson: '<div class="lesson-doc"><h1>Subjonctif</h1><p class="content-text">Il faut que je sois, que tu aies.</p></div>', ex: [{q:"Que nous (faire)", a:"fassions"}] } ]
+            },
+            MATH: {
+                '6e': [ { id: 'm61', title: 'Décimaux', cat: 'NUM', lesson: '<div class="lesson-doc"><h1>Nombres Décimaux</h1><p class="content-text">Partie entière et décimale.</p></div>', ex: [{q:"Chiffre des dixièmes dans 12,34 ?", a:"3"}] } ],
+                '5e': [ { id: 'm51', title: 'Relatifs', cat: 'CALC', lesson: '<div class="lesson-doc"><h1>Nombres Relatifs</h1><p class="content-text">Positifs et Négatifs.</p></div>', ex: [{q:"(-5) + (-2)", a:"-7"}] } ],
+                '4e': [ { id: 'm41', title: 'Pythagore', cat: 'GEO', lesson: '<div class="lesson-doc"><h1>Pythagore</h1><p class="content-text">Hypoténuse² = Côté1² + Côté2².</p></div>', ex: [{q:"Si côtés 3 et 4, Hypo² ?", a:"25"}] } ],
+                '3e': [ { id: 'm31', title: 'Fonctions', cat: 'ALG', lesson: '<div class="lesson-doc"><h1>Fonctions</h1><p class="content-text">Image et Antécédent.</p></div>', ex: [{q:"f(x)=2x. Image de 3 ?", a:"6"}] } ]
+            },
+            PHYS: {
+                '6e': [ { id: 'p61', title: 'La Matière', cat: 'MAT', lesson: '<div class="lesson-doc"><h1>États de la matière</h1><p class="content-text">Solide, Liquide, Gaz.</p></div>', ex: [{q:"État compressible ?", a:"gaz"}] } ],
+                '5e': [ { id: 'p51', title: 'Électricité', cat: 'ELEC', lesson: '<div class="lesson-doc"><h1>Circuits</h1><p class="content-text">Générateur, Récepteur, Interrupteur.</p></div>', ex: [{q:"Pour que ça brille, interrupteur...", a:"fermé"}] } ],
+                '4e': [ { id: 'p41', title: 'Atomes', cat: 'CHIM', lesson: '<div class="lesson-doc"><h1>L\'Atome</h1><p class="content-text">Noyau et électrons.</p></div>', ex: [{q:"Symbole carbone ?", a:"C"}] } ],
+                '3e': [ { id: 'p31', title: 'Poids/Masse', cat: 'MECA', lesson: '<div class="lesson-doc"><h1>Poids vs Masse</h1><p class="content-text">P = m x g.</p></div>', ex: [{q:"Unité du Poids ?", a:"newton"}] } ]
+            },
+            SVT: {
+                '6e': [ { id: 's61', title: 'Le Vivant', cat: 'BIO', lesson: '<div class="lesson-doc"><h1>Le Vivant</h1><p class="content-text">Naître, grandir, se reproduire, mourir.</p></div>', ex: [{q:"Un robot est vivant ?", a:"non"}] } ],
+                '5e': [ { id: 's51', title: 'Respiration', cat: 'CORPS', lesson: '<div class="lesson-doc"><h1>Respiration</h1><p class="content-text">O2 in, CO2 out.</p></div>', ex: [{q:"Gaz rejeté ?", a:"dioxyde de carbone"}] } ],
+                '4e': [ { id: 's41', title: 'Séismes', cat: 'GEO', lesson: '<div class="lesson-doc"><h1>Séismes</h1><p class="content-text">Foyer, Épicentre, Ondes.</p></div>', ex: [{q:"Point de rupture ?", a:"foyer"}] } ],
+                '3e': [ { id: 's31', title: 'Génétique', cat: 'GEN', lesson: '<div class="lesson-doc"><h1>ADN</h1><p class="content-text">Chromosomes, Gènes, Allèles.</p></div>', ex: [{q:"Nombre chromosomes humains ?", a:"46"}] } ]
+            }
+        };
+
+        /* =================================================================
+           MOTEUR DE JEU (GAME ENGINE)
+           ================================================================= */
+        const game = {
+            state: {
+                subject: 'FR',
+                mode: 'learn',
+                class: '6e',
+                modIdx: 0,
+                exIdx: 0,
+                xp: 0,
+                lives: 3,
+                god: false
+            },
+
+            init() {
+                this.renderNav();
+                this.loadModule();
+                this.setupListeners();
+                this.updateHUD();
+            },
+
+            setSubject(s) {
+                this.state.subject = s;
+                document.body.className = 'theme-' + s;
+                document.querySelectorAll('.subj-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector(`button[data-subj="${s}"]`).classList.add('active');
+                
+                this.state.modIdx = 0;
+                this.state.exIdx = 0;
+                this.renderNav();
+                this.loadModule();
+            },
+
+            setMode(m) {
+                this.state.mode = m;
+                document.querySelectorAll('.mode-btn').forEach(b => b.classList.remove('active'));
+                document.querySelector(`button[data-mode="${m}"]`).classList.add('active');
+                this.state.exIdx = 0;
+                this.loadModule();
+            },
+
+            renderNav() {
+                const list = document.getElementById('nav-list');
+                list.innerHTML = '';
+                const data = DB[this.state.subject];
+                
+                ['6e', '5e', '4e', '3e'].forEach(c => {
+                    if(!data[c]) return;
+                    const sep = document.createElement('div');
+                    sep.className = 'class-sep';
+                    sep.innerText = c.toUpperCase();
+                    list.appendChild(sep);
+
+                    data[c].forEach((m, idx) => {
+                        const btn = document.createElement('button');
+                        btn.className = 'mod-item' + (this.state.class === c && this.state.modIdx === idx ? ' active' : '');
+                        btn.innerHTML = `<b>${m.title}</b><br><small>${m.cat}</small>`;
+                        btn.onclick = () => {
+                            this.state.class = c;
+                            this.state.modIdx = idx;
+                            this.state.exIdx = 0;
+                            this.renderNav();
+                            this.loadModule();
+                        };
+                        list.appendChild(btn);
+                    });
+                });
+            },
+
+            loadModule() {
+                const mod = DB[this.state.subject][this.state.class][this.state.modIdx];
+                const area = document.getElementById('content-area');
+                document.getElementById('path-info').innerText = `${this.state.subject} / ${this.state.class.toUpperCase()} / ${mod.title}`;
+
+                if(this.state.mode === 'learn') {
+                    area.innerHTML = `<div class="lesson-doc">${mod.lesson}</div>`;
+                } else {
+                    this.renderEx();
+                }
+            },
+
+            renderEx() {
+                const mod = DB[this.state.subject][this.state.class][this.state.modIdx];
+                const area = document.getElementById('content-area');
+                
+                if(this.state.exIdx >= mod.ex.length) {
+                    area.innerHTML = `<div class="ex-card"><h1>MODULE COMPLÉTÉ !</h1><p>Vous avez gagné de l'expérience.</p><button class="auth-btn" style="width:200px" onclick="game.setMode('learn')">CONTINUER</button></div>`;
+                    return;
+                }
+
+                const ex = mod.ex[this.state.exIdx];
+                area.innerHTML = `
+                    <div class="ex-card">
+                        <div style="color:var(--primary); font-family:monospace; margin-bottom:10px;">QUESTION ${this.state.exIdx+1}/${mod.ex.length}</div>
+                        <div class="ex-q">${ex.q}</div>
+                        <input type="text" id="ans-in" class="ex-input" placeholder="Écrivez votre réponse..." autocomplete="off">
+                        <br><br>
+                        <button class="auth-btn" style="width:200px" onclick="game.check()">VALIDER</button>
+                    </div>
+                `;
+                setTimeout(() => {
+                    const inp = document.getElementById('ans-in');
+                    if(inp) {
+                        inp.focus();
+                        inp.onkeypress = (e) => { if(e.key === 'Enter') game.check(); };
+                    }
+                }, 50);
+            },
+
+            check() {
+                const val = document.getElementById('ans-in').value.toLowerCase().trim();
+                const mod = DB[this.state.subject][this.state.class][this.state.modIdx];
+                const correct = mod.ex[this.state.exIdx].a.toLowerCase();
+
+                if(val === correct || this.state.god) {
+                    this.state.xp += 50;
+                    this.state.exIdx++;
+                    this.showToast("VALIDE +50 XP", false);
+                    this.updateHUD();
+                    this.renderEx();
+                } else {
+                    this.state.lives--;
+                    this.showToast("ERREUR -1 VIE", true);
+                    this.updateHUD();
+                    if(this.state.lives <= 0) this.gameOver();
+                }
+            },
+
+            updateHUD() {
+                document.getElementById('xp-val').innerText = this.state.xp;
+                let l = "";
+                for(let i=0; i<3; i++) l += (i < this.state.lives) ? "❤️" : "🖤";
+                document.getElementById('lives-val').innerText = l;
+            },
+
+            gameOver() {
+                document.getElementById('game-over').style.display = 'flex';
+            },
+
+            revive() {
+                this.state.lives = 3;
+                this.updateHUD();
+                document.getElementById('game-over').style.display = 'none';
+                this.setMode('learn');
+            },
+
+            showToast(msg, err) {
+                const t = document.getElementById('toast');
+                t.innerText = msg;
+                t.style.background = err ? 'var(--accent)' : 'var(--success)';
+                t.classList.add('show');
+                setTimeout(() => t.classList.remove('show'), 2500);
+            },
+
+            setupListeners() {
+                // Subject Buttons
+                document.querySelectorAll('.subj-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.setSubject(e.target.dataset.subj));
+                });
+                // Mode Buttons
+                document.querySelectorAll('.mode-btn').forEach(btn => {
+                    btn.addEventListener('click', (e) => this.setMode(e.target.dataset.mode));
+                });
+                // Revive Button
+                document.getElementById('revive-btn').addEventListener('click', () => this.revive());
+
+                // Cheats
+                let keys = "";
+                document.addEventListener('keydown', (e) => {
+                    keys += e.key.toLowerCase();
+                    if(keys.length > 6) keys = keys.slice(-6);
+                    if(keys === "lolon0") {
+                        this.state.god = !this.state.god;
+                        this.showToast("GOD MODE: " + (this.state.god?"ON":"OFF"));
+                    }
+                });
+            }
+        };
+
+        // Attach game to window for debug if needed
+        window.game = game;
+
+    </script>
+</body>
+</html>
